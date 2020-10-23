@@ -1,0 +1,4 @@
+
+
+class MafilesNotFoundError(Exception):
+	pass
