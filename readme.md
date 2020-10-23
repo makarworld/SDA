@@ -1,4 +1,4 @@
-# terminal SDA
+# Terminal SDA
 
 You can add many mafiles and get GuardCodes fast.
 This app not log in steam.
