@@ -3,3 +3,6 @@ cryptography>=42.0.0
 python-telegram-bot[socks]>=21.0
 requests[socks]>=2.28.0
 PySocks>=1.7.1
+pysteamauth>=1.1.0
+steampy>=1.2.0
+aiohttp-socks>=0.8.0

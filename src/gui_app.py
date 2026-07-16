@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QProgressBar,
     QPushButton,
@@ -33,17 +34,23 @@ from PyQt6.QtWidgets import (
 
 from src.core import (
     MAFILES_DIR,
+    ROOT_DIR,
     account_label,
     ensure_mafiles_dir,
+    find_mafiles_in_dir,
     folder_needs_password,
     generate_one_time_code,
     get_mafiles,
     import_mafile,
     is_encrypted_folder,
     open_mafiles,
-    seconds_until_refresh,
     steam_id_from_data,
     verify_passkey,
+)
+from src.sessions_vault import (
+    sessions_configured,
+    set_sessions_password,
+    verify_sessions_password,
 )
 from src.i18n import t
 from src.settings import (
@@ -55,7 +62,6 @@ from src.settings import (
 )
 from src.telegram_bot import TelegramBotWorker, assign_slugs, verify_bot_token
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ICON_PATH = os.path.join(ROOT_DIR, "icon.ico")
 
 UI_FONT = '"Bahnschrift", "Segoe UI Variable", "Segoe UI", sans-serif'
@@ -92,6 +98,46 @@ QFrame#titleBar {{
     border-top-right-radius: 10px;
     border-bottom: 1px solid {COLORS['border']};
 }}
+QFrame#navBar {{
+    background: {COLORS['panel_alt']};
+    border-bottom: 1px solid {COLORS['border']};
+}}
+QPushButton#navBtn {{
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: {COLORS['muted']};
+    font-size: 12px;
+    font-weight: 500;
+    padding: 0 8px;
+    min-height: 34px;
+    max-height: 34px;
+}}
+QPushButton#navBtn:hover {{
+    background: {COLORS['btn_hover']};
+    color: {COLORS['text']};
+    border: none;
+}}
+QPushButton#navBtn:pressed {{
+    background: {COLORS['border']};
+    border: none;
+}}
+QMenu {{
+    background: {COLORS['panel']};
+    color: {COLORS['text']};
+    border: 1px solid {COLORS['border']};
+    padding: 4px;
+}}
+QMenu::item {{
+    padding: 6px 18px;
+    border-radius: 4px;
+}}
+QMenu::item:selected {{
+    background: {COLORS['btn_hover']};
+}}
+QMenu::item:disabled {{
+    color: {COLORS['accent']};
+}}
 QLabel#winTitle {{
     color: {COLORS['accent']};
     font-size: 13px;
@@ -120,6 +166,28 @@ QLabel#accountName {{
     color: {COLORS['text']};
     font-size: 16px;
     font-weight: 600;
+}}
+QPushButton#onlineBtn {{
+    background: rgba(102, 192, 244, 0.10);
+    color: {COLORS['accent']};
+    border: 1px solid rgba(102, 192, 244, 0.45);
+    border-radius: 11px;
+    padding: 3px 11px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    min-height: 22px;
+    max-height: 22px;
+}}
+QPushButton#onlineBtn:hover {{
+    background: {COLORS['accent']};
+    color: #0E1621;
+    border: 1px solid {COLORS['accent']};
+}}
+QPushButton#onlineBtn:disabled {{
+    background: transparent;
+    color: {COLORS['muted']};
+    border: 1px solid {COLORS['border']};
 }}
 QLabel#codeLabel {{
     color: {COLORS['code']};
@@ -272,34 +340,6 @@ QPushButton#primary {{
 QPushButton#primary:hover {{
     background: #8ED3F8;
 }}
-QPushButton#flagBtn {{
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-    min-width: 22px;
-    max-width: 22px;
-    min-height: 22px;
-    max-height: 22px;
-    font-size: 13px;
-    opacity: 0.4;
-}}
-QPushButton#flagBtn:hover {{
-    background: {COLORS['btn_hover']};
-    border-radius: 4px;
-    opacity: 0.85;
-}}
-QPushButton#flagBtnActive {{
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-    min-width: 22px;
-    max-width: 22px;
-    min-height: 22px;
-    max-height: 22px;
-    font-size: 13px;
-}}
 QFrame#codeCard {{
     background: {COLORS['panel']};
     border: 1px solid {COLORS['border']};
@@ -374,13 +414,11 @@ class TitleBar(QFrame):
         title: str = "SDA Codes",
         show_max: bool = True,
         show_min: bool = True,
-        on_language=None,
         on_close=None,
     ):
         super().__init__()
         self._window = window
         self._drag_pos: QPoint | None = None
-        self._on_language = on_language
         self.setObjectName("titleBar")
         self.setFixedHeight(40)
 
@@ -392,25 +430,6 @@ class TitleBar(QFrame):
         self.title_lbl.setObjectName("winTitle")
         lay.addWidget(self.title_lbl)
         lay.addStretch(1)
-
-        # вторичный chrome: крошечные флаги слева от кнопок окна
-        self.lang_ru = None
-        self.lang_en = None
-        if on_language is not None:
-            self.lang_ru = QPushButton("🇷🇺")
-            self.lang_en = QPushButton("🇬🇧")
-            for btn, code, tip in (
-                (self.lang_ru, "ru", "Русский"),
-                (self.lang_en, "en", "English"),
-            ):
-                btn.setCursor(Qt.CursorShape.PointingHandCursor)
-                btn.setFixedSize(22, 22)
-                btn.setToolTip(tip)
-                btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-                btn.clicked.connect(lambda _=False, c=code: on_language(c))
-                lay.addWidget(btn)
-            lay.addSpacing(4)
-            self.update_lang_flags()
 
         self.min_btn = None
         if show_min:
@@ -433,16 +452,6 @@ class TitleBar(QFrame):
             self.close_btn.clicked.connect(window.close)
         lay.addWidget(self.close_btn)
 
-    def update_lang_flags(self):
-        if not self.lang_ru or not self.lang_en:
-            return
-        cur = lang()
-        for btn, code in ((self.lang_ru, "ru"), (self.lang_en, "en")):
-            btn.setObjectName("flagBtnActive" if cur == code else "flagBtn")
-            btn.setEnabled(cur != code)
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
-
     def retranslate(self, title: str):
         self.title_lbl.setText(title)
         if self.min_btn is not None:
@@ -451,7 +460,6 @@ class TitleBar(QFrame):
         if self.max_btn is not None:
             tip = t("restore", lang()) if self._window.isMaximized() else t("maximize", lang())
             self.max_btn.setToolTip(tip)
-        self.update_lang_flags()
 
     def _toggle_max(self):
         if self.max_btn is None:
@@ -486,6 +494,60 @@ class TitleBar(QFrame):
         if event.button() == Qt.MouseButton.LeftButton and self.max_btn is not None:
             self._toggle_max()
             event.accept()
+
+
+class NavBar(QFrame):
+    """Полоска под title bar: Настройки · Справка · Язык."""
+
+    def __init__(self, on_settings, on_about, on_language, parent=None):
+        super().__init__(parent)
+        self._on_language = on_language
+        self.setObjectName("navBar")
+        self.setFixedHeight(34)
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(0)
+
+        self.settings_btn = QPushButton(t("settings", lang()))
+        self.about_btn = QPushButton(t("about", lang()))
+        self.lang_btn = QPushButton(t("language", lang()))
+        for btn, slot in (
+            (self.settings_btn, on_settings),
+            (self.about_btn, on_about),
+            (self.lang_btn, None),
+        ):
+            btn.setObjectName("navBtn")
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            if slot is not None:
+                btn.clicked.connect(slot)
+            lay.addWidget(btn, 1)
+
+        self.lang_btn.clicked.connect(self._pick_language)
+        self._rebuild_lang_menu()
+
+    def _rebuild_lang_menu(self):
+        menu = QMenu(self)
+        cur = lang()
+        for code, label in (("ru", "🇷🇺  Русский"), ("en", "🇬🇧  English")):
+            act = menu.addAction(label)
+            act.setEnabled(code != cur)
+            act.triggered.connect(lambda _=False, c=code: self._on_language(c))
+        self._lang_menu = menu
+
+    def _pick_language(self):
+        self._rebuild_lang_menu()
+        pos = self.lang_btn.mapToGlobal(self.lang_btn.rect().bottomLeft())
+        self._lang_menu.exec(pos)
+
+    def retranslate(self):
+        L = lang()
+        self.settings_btn.setText(t("settings", L))
+        self.about_btn.setText(t("about", L))
+        self.lang_btn.setText(t("language", L))
+        self._rebuild_lang_menu()
+
 
 
 def mask_token(token: str) -> str:
@@ -572,7 +634,8 @@ class SettingsDialog(QDialog):
         super().__init__(None)
         self._owner = owner
         self.setObjectName("settingsDialog")
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
         self.setMinimumWidth(320)
         if os.path.isfile(ICON_PATH):
@@ -638,6 +701,20 @@ class SettingsDialog(QDialog):
         self.help_lbl.setObjectName("hint")
         self.help_lbl.setWordWrap(True)
         lay.addWidget(self.help_lbl)
+
+        self.sessions_section = QLabel(t("sessions_pwd_section", lang()))
+        self.sessions_section.setObjectName("section")
+        lay.addWidget(self.sessions_section)
+
+        self.sessions_pwd_edit = QLineEdit()
+        self.sessions_pwd_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.sessions_pwd_edit.setPlaceholderText(t("sessions_pwd_placeholder", lang()))
+        lay.addWidget(self.sessions_pwd_edit)
+
+        self.sessions_help = QLabel(t("sessions_pwd_help", lang()))
+        self.sessions_help.setObjectName("hint")
+        self.sessions_help.setWordWrap(True)
+        lay.addWidget(self.sessions_help)
 
         self.conn_label = QLabel("")
         self.conn_label.setObjectName("hint")
@@ -709,14 +786,14 @@ class SettingsDialog(QDialog):
 
     def _finish_close(self, saved: bool):
         self._stop_check()
-        self.hide()
         code = int(QDialog.DialogCode.Accepted if saved else QDialog.DialogCode.Rejected)
-        self.setResult(code)
-        self.finished.emit(code)
-        self.deleteLater()
+        QDialog.done(self, code)
 
     def closeEvent(self, event):
-        event.accept()
+        if self._closing:
+            event.accept()
+            return
+        event.ignore()
         self._safe_close()
 
     def _fit_to_owner(self):
@@ -774,14 +851,19 @@ class SettingsDialog(QDialog):
 
     def _stop_check(self):
         worker = self._check_worker
+        self._check_worker = None
         if worker is None:
             return
         try:
             worker.finished_ok.disconnect()
             worker.finished_err.disconnect()
-        except TypeError:
+        except (TypeError, RuntimeError):
             pass
-        self._check_worker = None
+        try:
+            if worker.isRunning():
+                worker.wait(300)
+        except RuntimeError:
+            pass
 
     def _check_token_async(self):
         token = self._resolve_token()
@@ -790,14 +872,18 @@ class SettingsDialog(QDialog):
             return
         self._set_conn(t("checking", lang()), "hint")
         self._stop_check()
-        worker = TokenCheckWorker(token, proxy_url(self._proxy_settings()))
+        worker = TokenCheckWorker(token, proxy_url(self._proxy_settings()), self)
         self._check_worker = worker
         worker.finished_ok.connect(self._on_check_ok)
         worker.finished_err.connect(self._on_check_err)
-        worker.finished.connect(worker.deleteLater)
+        worker.finished.connect(self._on_check_finished)
         worker.start()
 
+    def _on_check_finished(self):
+        self._check_worker = None
+
     def _on_check_ok(self, username: str):
+        self._check_worker = None
         if self._closing:
             return
         self._set_conn(t("bot_connected", lang(), user=username), "ok")
@@ -806,6 +892,7 @@ class SettingsDialog(QDialog):
             self._do_save()
 
     def _on_check_err(self, err: str):
+        self._check_worker = None
         if self._closing:
             return
         self._set_conn(t("bot_error", lang(), err=err), "error")
@@ -832,6 +919,12 @@ class SettingsDialog(QDialog):
         fresh["bot_token"] = token
         fresh["proxy_type"] = px["proxy_type"]
         fresh["proxy"] = px["proxy"]
+        sessions_pwd = self.sessions_pwd_edit.text()
+        if sessions_pwd:
+            set_sessions_password(sessions_pwd, fresh)
+            fresh = load_settings()
+            if self._owner is not None:
+                self._owner.sessions_password = sessions_pwd
         set_pair_code(self.pair_label.text().strip().upper())
         # whitelist / pair_code не пишем в файл
         save_settings(fresh)
@@ -854,11 +947,11 @@ class MainWindow(QMainWindow):
         self.mafiles_dict = {}
         self.current_file = None
         self.passkey: str | None = None
+        self.sessions_password: str | None = None
         self._toast_until = 0
         self._bucket = None
         self._folder_sig = None
         self._bot: TelegramBotWorker | None = None
-        self._settings: SettingsDialog | None = None
         self._ignore_close_until = 0.0
         self.bot_accounts: list = []
 
@@ -870,19 +963,41 @@ class MainWindow(QMainWindow):
         root.setSpacing(0)
 
         self.title_bar = TitleBar(
-            self, title=t("app_title", lang()), show_max=True, on_language=self._set_language
+            self,
+            title=t("app_title", lang()),
+            show_max=True,
         )
         root.addWidget(self.title_bar)
+
+        self.nav_bar = NavBar(
+            on_settings=self._show_settings,
+            on_about=self._show_about,
+            on_language=self._set_language,
+        )
+        root.addWidget(self.nav_bar)
 
         body = QWidget()
         body_lay = QVBoxLayout(body)
         body_lay.setContentsMargins(16, 16, 16, 16)
         body_lay.setSpacing(12)
 
+        head = QHBoxLayout()
+        head.setContentsMargins(0, 0, 0, 0)
+        head.setSpacing(10)
+        head.addStretch(1)
         self.account_name = QLabel(t("select_account", lang()))
         self.account_name.setObjectName("accountName")
-        self.account_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        body_lay.addWidget(self.account_name)
+        self.account_name.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
+        head.addWidget(self.account_name, 0, Qt.AlignmentFlag.AlignVCenter)
+        self.online_btn = QPushButton(t("online", lang()))
+        self.online_btn.setObjectName("onlineBtn")
+        self.online_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.online_btn.setEnabled(False)
+        self.online_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.online_btn.clicked.connect(self._show_online)
+        head.addWidget(self.online_btn, 0, Qt.AlignmentFlag.AlignVCenter)
+        head.addStretch(1)
+        body_lay.addLayout(head)
 
         card = QFrame()
         card.setObjectName("codeCard")
@@ -899,8 +1014,8 @@ class MainWindow(QMainWindow):
         card_lay.addWidget(self.code_label)
 
         self.progress = QProgressBar()
-        self.progress.setRange(0, 30)
-        self.progress.setValue(0)
+        self.progress.setRange(0, 30000)
+        self.progress.setValue(30000)
         self.progress.setTextVisible(False)
         card_lay.addWidget(self.progress)
 
@@ -940,14 +1055,7 @@ class MainWindow(QMainWindow):
         bottom.setSpacing(8)
         self.add_btn = QPushButton(t("add_mafile", lang()))
         self.add_btn.clicked.connect(self._import_mafile)
-        self.settings_btn = QPushButton(t("settings", lang()))
-        self.settings_btn.clicked.connect(self._show_settings)
-        self.about_btn = QPushButton(t("about", lang()))
-        self.about_btn.clicked.connect(self._show_about)
-        # равная доля ширины — текст не обрезается
         bottom.addWidget(self.add_btn, 1)
-        bottom.addWidget(self.settings_btn, 1)
-        bottom.addWidget(self.about_btn, 1)
         body_lay.addLayout(bottom)
 
         self.bot_status = QLabel("")
@@ -958,7 +1066,7 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._tick)
-        self.timer.start(250)
+        self.timer.start(50)
 
         self.watch_timer = QTimer(self)
         self.watch_timer.timeout.connect(self._watch_folder)
@@ -985,14 +1093,14 @@ class MainWindow(QMainWindow):
         L = lang()
         self.setWindowTitle(t("app_title", L))
         self.title_bar.retranslate(t("app_title", L))
+        self.nav_bar.retranslate()
         if not self.current_file:
             self.account_name.setText(t("select_account", L) if self.mafiles else t("no_mafile", L))
         self.hint.setText(t("code_hint", L))
         self.copy_btn.setText(t("copy", L))
         self.section.setText(t("accounts", L))
         self.add_btn.setText(t("add_mafile", L))
-        self.settings_btn.setText(t("settings", L))
-        self.about_btn.setText(t("about", L))
+        self.online_btn.setText(t("online", L))
         if not (load_settings().get("bot_token") or "").strip():
             self.bot_status.setText(t("bot_offline", L))
 
@@ -1059,6 +1167,7 @@ class MainWindow(QMainWindow):
             self.account_name.setText(t("no_mafile", L))
             self.code_label.setText("-----")
             self.copy_btn.setEnabled(False)
+            self.online_btn.setEnabled(False)
             self._refresh_bot_accounts()
             if self._bot and old_slugs != [a.get("slug") for a in self.bot_accounts]:
                 self._restart_bot()
@@ -1124,74 +1233,108 @@ class MainWindow(QMainWindow):
 
     def _import_mafile(self):
         L = lang()
-        path, _ = QFileDialog.getOpenFileName(
-            self,
-            t("import_title", L),
-            "",
-            "maFile (*.maFile);;All files (*.*)",
-        )
-        if not path:
+        box = QMessageBox(self)
+        box.setWindowTitle(t("import_title", L))
+        box.setText(t("import_pick", L))
+        files_btn = box.addButton(t("import_files", L), QMessageBox.ButtonRole.AcceptRole)
+        folder_btn = box.addButton(t("import_folder", L), QMessageBox.ButtonRole.ActionRole)
+        box.addButton(QMessageBox.StandardButton.Cancel)
+        box.exec()
+        clicked = box.clickedButton()
+        if clicked == files_btn:
+            paths, _ = QFileDialog.getOpenFileNames(
+                self,
+                t("import_title", L),
+                "",
+                "maFile (*.maFile);;All files (*.*)",
+            )
+        elif clicked == folder_btn:
+            folder = QFileDialog.getExistingDirectory(self, t("import_folder_title", L))
+            paths = find_mafiles_in_dir(folder) if folder else []
+            if folder and not paths:
+                QMessageBox.warning(self, t("import_title", L), t("import_empty", L))
+                return
+        else:
             return
+        if not paths:
+            return
+        self._import_paths(paths)
 
+    def _import_paths(self, paths: list):
+        L = lang()
         import_password = None
         vault_password = self.passkey
-        try:
-            dest = import_mafile(path, import_password=None, vault_password=vault_password)
-        except ValueError as e:
-            msg = str(e)
-            need_pwd = any(
+        ok_names = []
+        errors = []
+
+        def _need_pwd(msg: str) -> bool:
+            return any(
                 x in msg.lower()
                 for x in ("зашифрован", "парол", "passkey", "salt", "manifest", "нужен")
             )
-            if not need_pwd:
-                QMessageBox.warning(self, t("import_title", L), msg)
-                return
-            import_password = self._ask_password("enc_import_src")
-            if not import_password:
-                return
+
+        def _ensure_passwords() -> bool:
+            nonlocal import_password, vault_password
+            if import_password is None:
+                import_password = self._ask_password("enc_import_src")
+                if not import_password:
+                    return False
             if is_encrypted_folder() and not vault_password:
                 vault_password = self._ask_password("enc_import_vault")
                 if not vault_password:
-                    return
+                    return False
                 if not verify_passkey(vault_password):
                     QMessageBox.warning(self, t("import_title", L), t("enc_vault_bad", L))
-                    return
+                    return False
             elif not vault_password:
                 vault_password = import_password
-            try:
-                dest = import_mafile(
-                    path,
-                    import_password=import_password,
-                    vault_password=vault_password,
-                )
-                self.passkey = vault_password
-            except Exception as e2:
-                QMessageBox.warning(self, t("import_title", L), str(e2))
-                return
-        except Exception as e:
-            QMessageBox.warning(self, t("import_title", L), str(e))
-            return
+            self.passkey = vault_password
+            return True
 
-        self.toast.setText(t("import_ok", L, name=dest))
-        self._toast_until = time.time() + 3.0
-        self.reload_accounts(quiet=True)
+        for path in paths:
+            try:
+                dest = import_mafile(path, import_password=import_password, vault_password=vault_password)
+                ok_names.append(dest)
+                continue
+            except ValueError as e:
+                msg = str(e)
+                if not _need_pwd(msg):
+                    errors.append("%s: %s" % (os.path.basename(path), msg))
+                    continue
+                if not _ensure_passwords():
+                    return
+                try:
+                    dest = import_mafile(
+                        path,
+                        import_password=import_password,
+                        vault_password=vault_password,
+                    )
+                    ok_names.append(dest)
+                except Exception as e2:
+                    errors.append("%s: %s" % (os.path.basename(path), e2))
+            except Exception as e:
+                errors.append("%s: %s" % (os.path.basename(path), e))
+
+        if ok_names:
+            if len(ok_names) == 1:
+                self.toast.setText(t("import_ok", L, name=ok_names[0]))
+            else:
+                self.toast.setText(t("import_ok_many", L, n=len(ok_names)))
+            self._toast_until = time.time() + 3.0
+            self.reload_accounts(quiet=True)
+        if errors:
+            QMessageBox.warning(
+                self,
+                t("import_title", L),
+                "\n".join(errors[:12]) + ("\n…" if len(errors) > 12 else ""),
+            )
 
     def _show_about(self):
         AboutDialog(self).exec()
 
     def _show_settings(self):
-        if self._settings is not None and self._settings.isVisible():
-            self._settings.raise_()
-            self._settings.activateWindow()
-            return
         dlg = SettingsDialog(self)
-        dlg.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        dlg.finished.connect(self._on_settings_finished)
-        self._settings = dlg
-        dlg.show()
-
-    def _on_settings_finished(self, result: int):
-        self._settings = None
+        result = dlg.exec()
         # click-through: release после закрытия настроек не должен нажать наш X
         self._ignore_close_until = time.time() + 0.35
         if result == QDialog.DialogCode.Accepted:
@@ -1259,11 +1402,58 @@ class MainWindow(QMainWindow):
             self.account_name.setText(t("select_account", lang()))
             self.code_label.setText("-----")
             self.copy_btn.setEnabled(False)
+            self.online_btn.setEnabled(False)
             return
         self.current_file = current.data(Qt.ItemDataRole.UserRole)
         self.account_name.setText(current.text())
         self.copy_btn.setEnabled(True)
+        self.online_btn.setEnabled(True)
         self._refresh_code()
+
+    def _ensure_sessions_password(self) -> bool:
+        if self.sessions_password and verify_sessions_password(self.sessions_password):
+            return True
+        L = lang()
+        text, ok = QInputDialog.getText(
+            self,
+            t("sessions_pwd_title", L),
+            t("sessions_pwd_prompt", L),
+            QLineEdit.EchoMode.Password,
+        )
+        if not ok or not text:
+            return False
+        if not verify_sessions_password(text):
+            QMessageBox.warning(self, t("sessions_pwd_title", L), t("sessions_pwd_bad", L))
+            return False
+        self.sessions_password = text
+        return True
+
+    def _show_online(self):
+        if not self.current_file:
+            return
+        L = lang()
+        if not sessions_configured():
+            QMessageBox.warning(self, t("online", L), t("sessions_pwd_required", L))
+            return
+        if not self._ensure_sessions_password():
+            return
+        data = self.mafiles_dict.get(self.current_file) or {}
+        login = data.get("account_name") or account_label(self.current_file, data)
+        if not data.get("shared_secret") or not data.get("identity_secret"):
+            QMessageBox.warning(self, t("online", L), t("conf_no_secrets", L))
+            return
+        from src.confirmations_dialog import ConfirmationsDialog
+
+        dlg = ConfirmationsDialog(
+            self,
+            login,
+            data,
+            self.current_file,
+            self.sessions_password,
+            ICON_PATH,
+        )
+        dlg.exec()
+        self._ignore_close_until = time.time() + 0.35
 
     def _refresh_code(self):
         if not self.current_file:
@@ -1277,15 +1467,16 @@ class MainWindow(QMainWindow):
         self._refresh_bot_accounts()
 
     def _tick(self):
-        self.progress.setValue(seconds_until_refresh())
+        now = time.time()
+        self.progress.setValue(int((30.0 - (now % 30.0)) * 1000))
         if self.current_file:
-            now_bucket = int(time.time()) // 30
+            now_bucket = int(now) // 30
             if self._bucket != now_bucket:
                 self._bucket = now_bucket
                 self._refresh_code()
         else:
             self._refresh_bot_accounts()
-        if time.time() > self._toast_until and self.toast.text():
+        if now > self._toast_until and self.toast.text():
             self.toast.setText("")
 
     def _copy_code(self, _event=None):

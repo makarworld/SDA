@@ -1,6 +1,13 @@
 /mafiles
+/sessions
 settings.json
 __pycache__/
 *.pyc
 .venv/
 venv/
+conf.py
+build/
+dist/
+*.spec
+gui.exe
+.vscode/

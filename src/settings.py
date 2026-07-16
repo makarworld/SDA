@@ -6,8 +6,9 @@ import re
 import secrets
 import string
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SETTINGS_PATH = os.path.join(ROOT, "settings.json")
+from src.core import ROOT_DIR
+
+SETTINGS_PATH = os.path.join(ROOT_DIR, "settings.json")
 _PAIR_LETTERS = string.ascii_uppercase
 
 # код привязки только на сессию, не пишем в settings.json
@@ -46,6 +47,8 @@ def _default():
         "proxy": "",
         "whitelist": [],
         "language": "ru",
+        "sessions_salt": "",
+        "sessions_verifier": "",
     }
 
 

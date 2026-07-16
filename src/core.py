@@ -2,6 +2,7 @@
 """Генерация Steam Guard кодов. Хранение maFile как в SDA (manifest + шифр на диске)."""
 import json
 import os
+import sys
 from os import listdir
 from os.path import isfile, join
 import hmac
@@ -18,7 +19,15 @@ from src.crypto import (
     get_random_salt,
 )
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def app_root() -> str:
+    """Папка рядом с exe (frozen) или корень репо (dev)."""
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+ROOT_DIR = app_root()
 MAFILES_DIR = os.path.join(ROOT_DIR, "mafiles")
 MANIFEST_NAME = "manifest.json"
 
@@ -179,6 +188,25 @@ def verify_passkey(password: str) -> bool:
     return False
 
 
+def mafile_filename(data: dict) -> str:
+    """Имя файла: login.maFile (не SteamID64)."""
+    sid = steam_id_from_data(data)
+    name = data.get("account_name") or (str(sid) if sid else "account")
+    safe = "".join(c if c.isalnum() or c in "._-" else "_" for c in str(name))
+    return safe + ".maFile"
+
+
+def find_mafiles_in_dir(directory: str) -> list:
+    """Рекурсивно найти все .maFile в папке."""
+    found = []
+    for root, _dirs, files in os.walk(directory):
+        for name in files:
+            if name.lower().endswith(".mafile"):
+                found.append(join(root, name))
+    found.sort()
+    return found
+
+
 def save_account(data: dict, password: str | None = None) -> str:
     """
     Как Manifest.SaveAccount: пишет .maFile и обновляет manifest.json.
@@ -191,12 +219,7 @@ def save_account(data: dict, password: str | None = None) -> str:
         raise ValueError("Хранилище зашифровано — нужен passkey.")
 
     sid = steam_id_from_data(data)
-    if sid:
-        filename = "%s.maFile" % sid
-    else:
-        name = data.get("account_name") or "account"
-        safe = "".join(c if c.isalnum() or c in "._-" else "_" for c in name)
-        filename = safe + ".maFile"
+    filename = mafile_filename(data)
 
     plaintext = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     salt = None
@@ -218,9 +241,19 @@ def save_account(data: dict, password: str | None = None) -> str:
         "filename": filename,
         "steamid": sid or 0,
     }
-    entries = [e for e in (man.get("entries") or []) if e.get("filename") != filename]
-    if sid:
-        entries = [e for e in entries if int(e.get("steamid") or 0) != sid]
+    entries = []
+    for e in man.get("entries") or []:
+        if e.get("filename") == filename:
+            continue
+        if sid and int(e.get("steamid") or 0) == sid:
+            old = join(MAFILES_DIR, e.get("filename") or "")
+            if isfile(old):
+                try:
+                    os.remove(old)
+                except OSError:
+                    pass
+            continue
+        entries.append(e)
     entries.append(entry)
     man["entries"] = entries
 
