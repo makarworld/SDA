@@ -77,7 +77,7 @@ STRINGS = {
         "proxy_none": "Нет",
         "proxy_http": "HTTP",
         "proxy_socks": "SOCKS",
-        "proxy_placeholder": "Hz8Rbo:YoaonE@178.171.42.127:9654",
+        "proxy_placeholder": "login:password@178.171.42.127:8888",
         "token_placeholder": "123456:AA...TOKEN",
         "settings_help": (
             "BOT_TOKEN — у @BotFather в Telegram: /newbot, затем скопируйте токен.\n"
@@ -227,13 +227,13 @@ STRINGS = {
         "proxy_none": "None",
         "proxy_http": "HTTP",
         "proxy_socks": "SOCKS",
-        "proxy_placeholder": "Hz8Rbo:YoaonE@178.171.42.127:9654",
+        "proxy_placeholder": "login:password@178.171.42.127:8888",
         "token_placeholder": "123456:AA...TOKEN",
         "settings_help": (
             "BOT_TOKEN — from @BotFather in Telegram: /newbot, then paste the token.\n"
             "Proxy — if api.telegram.org is blocked. HTTP or SOCKS.\n"
             "Required format: user:pass@host:port\n"
-            "Example: Hz8Rbo:YoaonE@178.171.42.127:9654"
+            "Example: login:password@178.171.42.127:8888"
         ),
         "checking": "Checking…",
         "pair_section": "PAIRING CODE",
