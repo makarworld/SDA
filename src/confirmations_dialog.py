@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Окно подтверждений Steam."""
+
 import os
 
 from PyQt6.QtCore import QPoint, Qt, QThread, QTimer, pyqtSignal
@@ -10,7 +11,6 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QScrollArea,
     QVBoxLayout,
@@ -66,9 +66,10 @@ class ConfirmationsDialog(QDialog):
         icon_path: str = "",
     ):
         super().__init__(None)
-        from src.gui_app import TitleBar, lang
+        from src.gui_app import CustomMessageBox, TitleBar, lang
 
         self._lang = lang
+        self._msg_box = CustomMessageBox
         self._owner = owner
         self._login = login
         self._mafile = mafile
@@ -79,9 +80,9 @@ class ConfirmationsDialog(QDialog):
         self._worker = None
         self._closing = False
 
-        self.setObjectName("settingsDialog")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
         self.setMinimumWidth(360)
         if icon_path and os.path.isfile(icon_path):
@@ -90,7 +91,16 @@ class ConfirmationsDialog(QDialog):
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
-        root.addWidget(
+
+        self.container = QFrame(self)
+        self.container.setObjectName("dialogContainer")
+        root.addWidget(self.container)
+
+        container_lay = QVBoxLayout(self.container)
+        container_lay.setContentsMargins(0, 0, 0, 0)
+        container_lay.setSpacing(0)
+
+        container_lay.addWidget(
             TitleBar(
                 self,
                 title=t("conf_title", lang()),
@@ -101,6 +111,7 @@ class ConfirmationsDialog(QDialog):
         )
 
         body = QWidget()
+        container_lay.addWidget(body)
         lay = QVBoxLayout(body)
         lay.setContentsMargins(16, 12, 16, 12)
         lay.setSpacing(8)
@@ -170,7 +181,6 @@ class ConfirmationsDialog(QDialog):
         close_row.addWidget(self.close_btn)
         lay.addLayout(close_row)
 
-        root.addWidget(body)
         self._load_vault()
         self._fit_to_owner()
 
@@ -302,7 +312,7 @@ class ConfirmationsDialog(QDialog):
     def _open_confirmations(self):
         pwd = self.pass_edit.text()
         if not pwd:
-            QMessageBox.warning(self, t("conf_title", self._L()), t("conf_need_password", self._L()))
+            self._msg_box.warning(self, t("conf_title", self._L()), t("conf_need_password", self._L()))
             return
         self._set_busy(True)
         self._stop_worker()
@@ -316,9 +326,7 @@ class ConfirmationsDialog(QDialog):
             def report(step, total, key):
                 worker.progress.emit(step, total, key)
 
-            return await open_confirmations_flow(
-                login, pwd, mafile, proxy or None, cookies, report
-            )
+            return await open_confirmations_flow(login, pwd, mafile, proxy or None, cookies, report)
 
         worker._coro_fn = job
         self._worker = worker
@@ -444,4 +452,4 @@ class ConfirmationsDialog(QDialog):
     def _on_action_err(self, err: str):
         self._worker = None
         self._set_busy(False)
-        QMessageBox.warning(self, t("conf_title", self._L()), err)
+        self._msg_box.warning(self, t("conf_title", self._L()), err)

@@ -3,6 +3,7 @@
 SDA Codes — вертикальный GUI Steam Guard.
 Frameless + кастомные кнопки, авто-обновление mafiles/, импорт (в т.ч. SDA encrypted).
 """
+
 import os
 import sys
 import time
@@ -17,14 +18,12 @@ from PyQt6.QtWidgets import (
     QFormLayout,
     QFrame,
     QHBoxLayout,
-    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
     QMenu,
-    QMessageBox,
     QProgressBar,
     QPushButton,
     QSizePolicy,
@@ -84,29 +83,32 @@ COLORS = {
 }
 
 STYLESHEET = f"""
-QMainWindow, QWidget#central, QDialog#settingsDialog, QDialog#aboutDialog {{
-    background: {COLORS['bg']};
-    color: {COLORS['text']};
+QMainWindow, QDialog {{
+    background: transparent;
+}}
+QWidget#central, QFrame#dialogContainer {{
+    background: {COLORS["bg"]};
+    color: {COLORS["text"]};
     font-family: {UI_FONT};
     font-size: 13px;
-    border: 1px solid {COLORS['border']};
+    border: 1px solid {COLORS["border"]};
     border-radius: 10px;
 }}
 QFrame#titleBar {{
-    background: {COLORS['panel']};
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+    border-bottom: 1px solid {COLORS["border"]};
 }}
 QFrame#navBar {{
-    background: {COLORS['panel_alt']};
-    border-bottom: 1px solid {COLORS['border']};
+    background: {COLORS["panel_alt"]};
+    border-bottom: 1px solid {COLORS["border"]};
 }}
 QPushButton#navBtn {{
     background: transparent;
     border: none;
     border-radius: 0;
-    color: {COLORS['muted']};
+    color: {COLORS["muted"]};
     font-size: 12px;
     font-weight: 500;
     padding: 0 8px;
@@ -114,18 +116,18 @@ QPushButton#navBtn {{
     max-height: 34px;
 }}
 QPushButton#navBtn:hover {{
-    background: {COLORS['btn_hover']};
-    color: {COLORS['text']};
+    background: {COLORS["btn_hover"]};
+    color: {COLORS["text"]};
     border: none;
 }}
 QPushButton#navBtn:pressed {{
-    background: {COLORS['border']};
+    background: {COLORS["border"]};
     border: none;
 }}
 QMenu {{
-    background: {COLORS['panel']};
-    color: {COLORS['text']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    color: {COLORS["text"]};
+    border: 1px solid {COLORS["border"]};
     padding: 4px;
 }}
 QMenu::item {{
@@ -133,20 +135,20 @@ QMenu::item {{
     border-radius: 4px;
 }}
 QMenu::item:selected {{
-    background: {COLORS['btn_hover']};
+    background: {COLORS["btn_hover"]};
 }}
 QMenu::item:disabled {{
-    color: {COLORS['accent']};
+    color: {COLORS["accent"]};
 }}
 QLabel#winTitle {{
-    color: {COLORS['accent']};
+    color: {COLORS["accent"]};
     font-size: 13px;
     font-weight: 600;
 }}
 QPushButton#winBtn, QPushButton#winClose {{
     background: transparent;
     border: none;
-    color: {COLORS['muted']};
+    color: {COLORS["muted"]};
     padding: 0;
     border-radius: 4px;
     min-width: 40px;
@@ -155,21 +157,21 @@ QPushButton#winBtn, QPushButton#winClose {{
     max-height: 30px;
 }}
 QPushButton#winBtn:hover {{
-    background: {COLORS['btn_hover']};
-    color: {COLORS['text']};
+    background: {COLORS["btn_hover"]};
+    color: {COLORS["text"]};
 }}
 QPushButton#winClose:hover {{
-    background: {COLORS['warn']};
+    background: {COLORS["warn"]};
     color: #FFFFFF;
 }}
 QLabel#accountName {{
-    color: {COLORS['text']};
+    color: {COLORS["text"]};
     font-size: 16px;
     font-weight: 600;
 }}
 QPushButton#onlineBtn {{
     background: rgba(102, 192, 244, 0.10);
-    color: {COLORS['accent']};
+    color: {COLORS["accent"]};
     border: 1px solid rgba(102, 192, 244, 0.45);
     border-radius: 11px;
     padding: 3px 11px;
@@ -180,17 +182,17 @@ QPushButton#onlineBtn {{
     max-height: 22px;
 }}
 QPushButton#onlineBtn:hover {{
-    background: {COLORS['accent']};
+    background: {COLORS["accent"]};
     color: #0E1621;
-    border: 1px solid {COLORS['accent']};
+    border: 1px solid {COLORS["accent"]};
 }}
 QPushButton#onlineBtn:disabled {{
     background: transparent;
-    color: {COLORS['muted']};
-    border: 1px solid {COLORS['border']};
+    color: {COLORS["muted"]};
+    border: 1px solid {COLORS["border"]};
 }}
 QLabel#codeLabel {{
-    color: {COLORS['code']};
+    color: {COLORS["code"]};
     font-family: {CODE_FONT};
     font-size: 48px;
     font-weight: 700;
@@ -198,39 +200,39 @@ QLabel#codeLabel {{
     padding: 4px 0;
 }}
 QLabel#pairCode {{
-    color: {COLORS['accent']};
+    color: {COLORS["accent"]};
     font-family: {CODE_FONT};
     font-size: 36px;
     font-weight: 700;
     letter-spacing: 12px;
 }}
 QLabel#hint {{
-    color: {COLORS['muted']};
+    color: {COLORS["muted"]};
     font-size: 11px;
 }}
 QLabel#error {{
-    color: {COLORS['warn']};
+    color: {COLORS["warn"]};
     font-size: 11px;
 }}
 QLabel#ok {{
-    color: {COLORS['accent']};
+    color: {COLORS["accent"]};
     font-size: 11px;
 }}
 QLabel#toast {{
-    color: {COLORS['accent']};
+    color: {COLORS["accent"]};
     font-size: 12px;
     font-weight: 500;
 }}
 QLabel#section {{
-    color: {COLORS['muted']};
+    color: {COLORS["muted"]};
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.6px;
 }}
 QComboBox {{
-    background: {COLORS['panel']};
-    color: {COLORS['text']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    color: {COLORS["text"]};
+    border: 1px solid {COLORS["border"]};
     border-radius: 6px;
     padding: 6px 10px;
     font-family: {UI_FONT};
@@ -240,16 +242,16 @@ QComboBox::drop-down {{
     width: 24px;
 }}
 QComboBox QAbstractItemView {{
-    background: {COLORS['panel']};
-    color: {COLORS['text']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    color: {COLORS["text"]};
+    border: 1px solid {COLORS["border"]};
     outline: none;
     padding: 0;
-    selection-background-color: {COLORS['border']};
-    selection-color: {COLORS['accent']};
+    selection-background-color: {COLORS["border"]};
+    selection-color: {COLORS["accent"]};
 }}
 QComboBox QListView {{
-    background: {COLORS['panel']};
+    background: {COLORS["panel"]};
     border: none;
     outline: none;
     padding: 0;
@@ -257,46 +259,46 @@ QComboBox QListView {{
 QComboBox QAbstractItemView::item {{
     padding: 6px 10px;
     min-height: 24px;
-    background: {COLORS['panel']};
-    color: {COLORS['text']};
+    background: {COLORS["panel"]};
+    color: {COLORS["text"]};
 }}
 QComboBox QAbstractItemView::item:selected {{
-    background: {COLORS['border']};
-    color: {COLORS['accent']};
+    background: {COLORS["border"]};
+    color: {COLORS["accent"]};
 }}
 QListWidget {{
-    background: {COLORS['panel']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    border: 1px solid {COLORS["border"]};
     border-radius: 8px;
     outline: none;
     padding: 4px;
 }}
 QListWidget::item {{
-    color: {COLORS['text']};
+    color: {COLORS["text"]};
     padding: 10px 12px;
     margin: 2px 4px;
     border-radius: 6px;
 }}
 QListWidget::item:hover {{
-    background: {COLORS['panel_alt']};
+    background: {COLORS["panel_alt"]};
 }}
 QListWidget::item:selected {{
-    background: {COLORS['border']};
-    color: {COLORS['accent']};
+    background: {COLORS["border"]};
+    color: {COLORS["accent"]};
 }}
 QScrollBar:vertical {{
-    background: {COLORS['panel_alt']};
+    background: {COLORS["panel_alt"]};
     width: 10px;
     margin: 4px 2px 4px 0;
     border-radius: 5px;
 }}
 QScrollBar::handle:vertical {{
-    background: {COLORS['scroll']};
+    background: {COLORS["scroll"]};
     min-height: 28px;
     border-radius: 5px;
 }}
 QScrollBar::handle:vertical:hover {{
-    background: {COLORS['scroll_hover']};
+    background: {COLORS["scroll_hover"]};
 }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
@@ -305,33 +307,33 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
 }}
 QProgressBar {{
     border: none;
-    background: {COLORS['panel_alt']};
+    background: {COLORS["panel_alt"]};
     border-radius: 3px;
     max-height: 6px;
     min-height: 6px;
 }}
 QProgressBar::chunk {{
-    background: {COLORS['accent']};
+    background: {COLORS["accent"]};
     border-radius: 3px;
 }}
 QPushButton {{
-    background: {COLORS['btn']};
-    color: {COLORS['text']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["btn"]};
+    color: {COLORS["text"]};
+    border: 1px solid {COLORS["border"]};
     border-radius: 6px;
     padding: 10px 14px;
     font-weight: 500;
     min-height: 20px;
 }}
 QPushButton:hover {{
-    background: {COLORS['btn_hover']};
-    border-color: {COLORS['accent']};
+    background: {COLORS["btn_hover"]};
+    border-color: {COLORS["accent"]};
 }}
 QPushButton:pressed {{
-    background: {COLORS['border']};
+    background: {COLORS["border"]};
 }}
 QPushButton#primary {{
-    background: {COLORS['accent']};
+    background: {COLORS["accent"]};
     color: #0E1621;
     border: none;
     font-weight: 600;
@@ -341,25 +343,20 @@ QPushButton#primary:hover {{
     background: #8ED3F8;
 }}
 QFrame#codeCard {{
-    background: {COLORS['panel']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    border: 1px solid {COLORS["border"]};
     border-radius: 10px;
 }}
 QLineEdit {{
-    background: {COLORS['panel']};
-    color: {COLORS['text']};
-    border: 1px solid {COLORS['border']};
+    background: {COLORS["panel"]};
+    color: {COLORS["text"]};
+    border: 1px solid {COLORS["border"]};
     border-radius: 6px;
     padding: 8px 10px;
     font-family: {UI_FONT};
 }}
-QDialog {{
-    background: {COLORS['bg']};
-    color: {COLORS['text']};
-    font-family: {UI_FONT};
-}}
 QDialog QLabel {{
-    color: {COLORS['text']};
+    color: {COLORS["text"]};
 }}
 """
 
@@ -549,7 +546,6 @@ class NavBar(QFrame):
         self._rebuild_lang_menu()
 
 
-
 def mask_token(token: str) -> str:
     if not token:
         return ""
@@ -585,47 +581,198 @@ class TokenCheckWorker(QThread):
             self.finished_err.emit(info)
 
 
-class AboutDialog(QDialog):
-    def __init__(self, parent=None):
-        # без Qt-parent — закрытие не гасит MainWindow
+class CustomDialogBase(QDialog):
+    """Базовый frameless диалог со скруглёнными углами без чёрных артефактов."""
+
+    def __init__(self, parent=None, title: str = "", min_width: int = 340):
         super().__init__(None)
-        self.setObjectName("aboutDialog")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
-        self.setMinimumWidth(360)
+        self.setMinimumWidth(min_width)
         if os.path.isfile(ICON_PATH):
             self.setWindowIcon(QIcon(ICON_PATH))
+
+        self._parent_ref = parent
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
-        root.addWidget(
-            TitleBar(
-                self,
-                title=t("about_title", lang()),
-                show_max=False,
-                show_min=False,
-                on_close=self.reject,
-            )
-        )
 
-        body = QWidget()
-        lay = QVBoxLayout(body)
-        lay.setContentsMargins(16, 16, 16, 16)
-        lay.setSpacing(12)
+        self.container = QFrame(self)
+        self.container.setObjectName("dialogContainer")
+        root.addWidget(self.container)
+
+        container_lay = QVBoxLayout(self.container)
+        container_lay.setContentsMargins(0, 0, 0, 0)
+        container_lay.setSpacing(0)
+
+        self.title_bar = TitleBar(
+            self,
+            title=title,
+            show_max=False,
+            show_min=False,
+            on_close=self.reject,
+        )
+        container_lay.addWidget(self.title_bar)
+
+        self.body = QWidget()
+        self.body_lay = QVBoxLayout(self.body)
+        self.body_lay.setContentsMargins(18, 16, 18, 16)
+        self.body_lay.setSpacing(12)
+        container_lay.addWidget(self.body)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._parent_ref is not None:
+            try:
+                pg = self._parent_ref.frameGeometry()
+                self.move(pg.center() - self.rect().center())
+            except Exception:
+                pass
+
+
+class CustomInputDialog(CustomDialogBase):
+    """Кастомный диалог ввода текста/пароля в стиле SDA."""
+
+    def __init__(
+        self,
+        parent=None,
+        title: str = "",
+        prompt: str = "",
+        echo: QLineEdit.EchoMode = QLineEdit.EchoMode.Normal,
+        text: str = "",
+    ):
+        super().__init__(parent, title=title, min_width=320)
+        self.prompt_label = QLabel(prompt)
+        self.prompt_label.setWordWrap(True)
+        self.body_lay.addWidget(self.prompt_label)
+
+        self.line_edit = QLineEdit(text)
+        self.line_edit.setEchoMode(echo)
+        self.line_edit.returnPressed.connect(self.accept)
+        self.body_lay.addWidget(self.line_edit)
+
+        btns_lay = QHBoxLayout()
+        btns_lay.setSpacing(10)
+        btns_lay.addStretch(1)
+
+        self.ok_btn = QPushButton("OK")
+        self.ok_btn.setObjectName("primary")
+        self.ok_btn.clicked.connect(self.accept)
+
+        self.cancel_btn = QPushButton(t("cancel", lang()))
+        self.cancel_btn.clicked.connect(self.reject)
+
+        btns_lay.addWidget(self.ok_btn)
+        btns_lay.addWidget(self.cancel_btn)
+        self.body_lay.addLayout(btns_lay)
+        self.adjustSize()
+
+    def value(self) -> str:
+        return self.line_edit.text()
+
+    @classmethod
+    def getText(
+        cls,
+        parent,
+        title: str,
+        prompt: str,
+        echo: QLineEdit.EchoMode = QLineEdit.EchoMode.Normal,
+        text: str = "",
+    ) -> tuple[str, bool]:
+        dlg = cls(parent, title=title, prompt=prompt, echo=echo, text=text)
+        dlg.line_edit.setFocus()
+        res = dlg.exec()
+        return dlg.value(), bool(res == QDialog.DialogCode.Accepted)
+
+
+class CustomMessageBox(CustomDialogBase):
+    """Кастомное окно сообщений/ошибок/предупреждений без звука Windows."""
+
+    def __init__(self, parent=None, title: str = "", text: str = "", level: str = "info"):
+        super().__init__(parent, title=title, min_width=320)
+        self.msg_label = QLabel(text)
+        self.msg_label.setWordWrap(True)
+        self.msg_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.body_lay.addWidget(self.msg_label)
+
+        btns_lay = QHBoxLayout()
+        btns_lay.setSpacing(10)
+        btns_lay.addStretch(1)
+
+        self.ok_btn = QPushButton("OK")
+        self.ok_btn.setObjectName("primary")
+        self.ok_btn.clicked.connect(self.accept)
+        btns_lay.addWidget(self.ok_btn)
+
+        self.body_lay.addLayout(btns_lay)
+        self.adjustSize()
+
+    @classmethod
+    def warning(cls, parent, title: str, text: str):
+        dlg = cls(parent, title=title, text=text, level="warning")
+        return dlg.exec()
+
+    @classmethod
+    def information(cls, parent, title: str, text: str):
+        dlg = cls(parent, title=title, text=text, level="info")
+        return dlg.exec()
+
+
+class ImportChoiceDialog(CustomDialogBase):
+    """Выбор способа импорта maFile."""
+
+    def __init__(self, parent=None):
+        L = lang()
+        super().__init__(parent, title=t("import_title", L), min_width=320)
+        self.choice: str | None = None
+
+        label = QLabel(t("import_pick", L))
+        label.setWordWrap(True)
+        self.body_lay.addWidget(label)
+
+        btns_lay = QHBoxLayout()
+        btns_lay.setSpacing(8)
+
+        files_btn = QPushButton(t("import_files", L))
+        files_btn.setObjectName("primary")
+        files_btn.clicked.connect(self._choose_files)
+
+        folder_btn = QPushButton(t("import_folder", L))
+        folder_btn.clicked.connect(self._choose_folder)
+
+        cancel_btn = QPushButton(t("cancel", L))
+        cancel_btn.clicked.connect(self.reject)
+
+        btns_lay.addWidget(files_btn)
+        btns_lay.addWidget(folder_btn)
+        btns_lay.addWidget(cancel_btn)
+        self.body_lay.addLayout(btns_lay)
+        self.adjustSize()
+
+    def _choose_files(self):
+        self.choice = "files"
+        self.accept()
+
+    def _choose_folder(self):
+        self.choice = "folder"
+        self.accept()
+
+
+class AboutDialog(CustomDialogBase):
+    def __init__(self, parent=None):
+        super().__init__(parent, title=t("about_title", lang()), min_width=360)
         label = QLabel(t("about_text", lang()))
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        lay.addWidget(label)
+        self.body_lay.addWidget(label)
         ok = QPushButton("OK")
         ok.setObjectName("primary")
         ok.clicked.connect(self.accept)
-        lay.addWidget(ok)
-        root.addWidget(body)
+        self.body_lay.addWidget(ok)
         self.adjustSize()
-        if parent is not None:
-            # смещение — иначе X совпадает с X главного окна (click-through)
-            self.move(parent.frameGeometry().topLeft() + QPoint(56, 56))
 
 
 class SettingsDialog(QDialog):
@@ -636,6 +783,7 @@ class SettingsDialog(QDialog):
         self.setObjectName("settingsDialog")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
         self.setMinimumWidth(320)
         if os.path.isfile(ICON_PATH):
@@ -650,6 +798,14 @@ class SettingsDialog(QDialog):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
+        self.container = QFrame(self)
+        self.container.setObjectName("dialogContainer")
+        root.addWidget(self.container)
+
+        container_lay = QVBoxLayout(self.container)
+        container_lay.setContentsMargins(0, 0, 0, 0)
+        container_lay.setSpacing(0)
+
         self.title_bar = TitleBar(
             self,
             title=t("settings_title", lang()),
@@ -657,9 +813,10 @@ class SettingsDialog(QDialog):
             show_min=False,
             on_close=self._safe_close,
         )
-        root.addWidget(self.title_bar)
+        container_lay.addWidget(self.title_bar)
 
         body = QWidget()
+        container_lay.addWidget(body)
         lay = QVBoxLayout(body)
         lay.setContentsMargins(16, 12, 16, 12)
         lay.setSpacing(10)
@@ -763,7 +920,6 @@ class SettingsDialog(QDialog):
         buttons.addWidget(self.close_btn)
         lay.addLayout(buttons)
 
-        root.addWidget(body)
         self.title_bar.retranslate(t("settings_title", lang()))
         self._fit_to_owner()
 
@@ -900,7 +1056,7 @@ class SettingsDialog(QDialog):
             self._save_pending = False
             self.save_btn.setEnabled(True)
             self.close_btn.setEnabled(True)
-            QMessageBox.warning(self, "BOT_TOKEN", t("token_bad", lang(), err=err))
+            CustomMessageBox.warning(self, "BOT_TOKEN", t("token_bad", lang(), err=err))
 
     def _save(self):
         token = self._resolve_token()
@@ -938,6 +1094,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle(t("app_title", lang()))
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         if os.path.isfile(ICON_PATH):
             self.setWindowIcon(QIcon(ICON_PATH))
         self.resize(380, 640)
@@ -1127,7 +1284,7 @@ class MainWindow(QMainWindow):
 
     def _ask_password(self, title_key="enc_title") -> str | None:
         L = lang()
-        text, ok = QInputDialog.getText(
+        text, ok = CustomInputDialog.getText(
             self,
             t(title_key, L),
             t("enc_prompt", L),
@@ -1144,10 +1301,10 @@ class MainWindow(QMainWindow):
             return True
         pwd = self._ask_password()
         if not pwd:
-            QMessageBox.warning(self, t("enc_warn_title", lang()), t("enc_warn_body", lang()))
+            CustomMessageBox.warning(self, t("enc_warn_title", lang()), t("enc_warn_body", lang()))
             return False
         if is_encrypted_folder() and not verify_passkey(pwd):
-            QMessageBox.warning(self, t("enc_warn_title", lang()), t("enc_bad", lang()))
+            CustomMessageBox.warning(self, t("enc_warn_title", lang()), t("enc_bad", lang()))
             return False
         self.passkey = pwd
         return True
@@ -1189,7 +1346,7 @@ class MainWindow(QMainWindow):
                 if not quiet and self._ensure_passkey():
                     return self.reload_accounts(quiet=quiet)
             if not quiet:
-                QMessageBox.warning(self, "mafiles", str(e))
+                CustomMessageBox.warning(self, "mafiles", str(e))
             self.mafiles = []
             self.mafiles_dict = {}
             return
@@ -1233,26 +1390,21 @@ class MainWindow(QMainWindow):
 
     def _import_mafile(self):
         L = lang()
-        box = QMessageBox(self)
-        box.setWindowTitle(t("import_title", L))
-        box.setText(t("import_pick", L))
-        files_btn = box.addButton(t("import_files", L), QMessageBox.ButtonRole.AcceptRole)
-        folder_btn = box.addButton(t("import_folder", L), QMessageBox.ButtonRole.ActionRole)
-        box.addButton(QMessageBox.StandardButton.Cancel)
-        box.exec()
-        clicked = box.clickedButton()
-        if clicked == files_btn:
+        dlg = ImportChoiceDialog(self)
+        if dlg.exec() != QDialog.DialogCode.Accepted or not dlg.choice:
+            return
+        if dlg.choice == "files":
             paths, _ = QFileDialog.getOpenFileNames(
                 self,
                 t("import_title", L),
                 "",
                 "maFile (*.maFile);;All files (*.*)",
             )
-        elif clicked == folder_btn:
+        elif dlg.choice == "folder":
             folder = QFileDialog.getExistingDirectory(self, t("import_folder_title", L))
             paths = find_mafiles_in_dir(folder) if folder else []
             if folder and not paths:
-                QMessageBox.warning(self, t("import_title", L), t("import_empty", L))
+                CustomMessageBox.warning(self, t("import_title", L), t("import_empty", L))
                 return
         else:
             return
@@ -1268,10 +1420,7 @@ class MainWindow(QMainWindow):
         errors = []
 
         def _need_pwd(msg: str) -> bool:
-            return any(
-                x in msg.lower()
-                for x in ("зашифрован", "парол", "passkey", "salt", "manifest", "нужен")
-            )
+            return any(x in msg.lower() for x in ("зашифрован", "парол", "passkey", "salt", "manifest", "нужен"))
 
         def _ensure_passwords() -> bool:
             nonlocal import_password, vault_password
@@ -1284,7 +1433,7 @@ class MainWindow(QMainWindow):
                 if not vault_password:
                     return False
                 if not verify_passkey(vault_password):
-                    QMessageBox.warning(self, t("import_title", L), t("enc_vault_bad", L))
+                    CustomMessageBox.warning(self, t("import_title", L), t("enc_vault_bad", L))
                     return False
             elif not vault_password:
                 vault_password = import_password
@@ -1323,7 +1472,7 @@ class MainWindow(QMainWindow):
             self._toast_until = time.time() + 3.0
             self.reload_accounts(quiet=True)
         if errors:
-            QMessageBox.warning(
+            CustomMessageBox.warning(
                 self,
                 t("import_title", L),
                 "\n".join(errors[:12]) + ("\n…" if len(errors) > 12 else ""),
@@ -1359,11 +1508,13 @@ class MainWindow(QMainWindow):
             secret = data.get("shared_secret")
             if not secret:
                 continue
-            rows.append({
-                "name": name,
-                "label": account_label(name, data),
-                "secret": secret,
-            })
+            rows.append(
+                {
+                    "name": name,
+                    "label": account_label(name, data),
+                    "secret": secret,
+                }
+            )
         self.bot_accounts = assign_slugs(rows)
 
     def _restart_bot(self):
@@ -1414,7 +1565,7 @@ class MainWindow(QMainWindow):
         if self.sessions_password and verify_sessions_password(self.sessions_password):
             return True
         L = lang()
-        text, ok = QInputDialog.getText(
+        text, ok = CustomInputDialog.getText(
             self,
             t("sessions_pwd_title", L),
             t("sessions_pwd_prompt", L),
@@ -1423,7 +1574,7 @@ class MainWindow(QMainWindow):
         if not ok or not text:
             return False
         if not verify_sessions_password(text):
-            QMessageBox.warning(self, t("sessions_pwd_title", L), t("sessions_pwd_bad", L))
+            CustomMessageBox.warning(self, t("sessions_pwd_title", L), t("sessions_pwd_bad", L))
             return False
         self.sessions_password = text
         return True
@@ -1433,14 +1584,14 @@ class MainWindow(QMainWindow):
             return
         L = lang()
         if not sessions_configured():
-            QMessageBox.warning(self, t("online", L), t("sessions_pwd_required", L))
+            CustomMessageBox.warning(self, t("online", L), t("sessions_pwd_required", L))
             return
         if not self._ensure_sessions_password():
             return
         data = self.mafiles_dict.get(self.current_file) or {}
         login = data.get("account_name") or account_label(self.current_file, data)
         if not data.get("shared_secret") or not data.get("identity_secret"):
-            QMessageBox.warning(self, t("online", L), t("conf_no_secrets", L))
+            CustomMessageBox.warning(self, t("online", L), t("conf_no_secrets", L))
             return
         from src.confirmations_dialog import ConfirmationsDialog
 

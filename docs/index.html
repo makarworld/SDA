@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+  <!-- SEO Primary Meta Tags -->
+  <title>SDA Codes Web — Steam Desktop Authenticator Онлайн & 2FA Guard Коды</title>
+  <meta name="title" content="SDA Codes Web — Steam Desktop Authenticator Онлайн & 2FA Guard Коды">
+  <meta name="description" content="Бесплатный онлайн генератор 2FA кодов Steam Guard из .maFile. 100% приватно и локально в браузере через Web Crypto API, безопасное хранение в localStorage, адаптивно для мобильных и ПК.">
+  <meta name="keywords" content="steam guard, steam desktop authenticator, sda, sda web, mafile, steam guard codes, 2fa steam, steam mobile authenticator online, генератор кодов steam guard, стим гарда коды онлайн">
+  <meta name="author" content="makarworld">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://makarworld.github.io/SDA/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://makarworld.github.io/SDA/">
+  <meta property="og:title" content="SDA Codes Web — Steam Desktop Authenticator Онлайн">
+  <meta property="og:description" content="Генератор 2FA кодов Steam Guard из .maFile прямо в браузере. Данные сохраняются локально на вашем устройстве.">
+  <meta property="og:image" content="https://makarworld.github.io/SDA/favicon.svg">
+  <meta property="og:site_name" content="SDA Codes Web">
+
+  <!-- Twitter Card -->
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:url" content="https://makarworld.github.io/SDA/">
+  <meta property="twitter:title" content="SDA Codes Web — Steam Desktop Authenticator Онлайн">
+  <meta property="twitter:description" content="Генератор 2FA кодов Steam Guard из .maFile прямо в браузере. 100% клиентский и безопасный.">
+  <meta property="twitter:image" content="https://makarworld.github.io/SDA/favicon.svg">
+
+  <!-- Favicon & PWA Theme -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="theme-color" content="#171A21">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Schema.org JSON-LD Structured Data for Search Engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SDA Codes Web",
+    "url": "https://makarworld.github.io/SDA/",
+    "description": "Online Steam Guard 2FA code generator from .maFile. Runs entirely client-side in the browser via Web Crypto API.",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "author": {
+      "@type": "Person",
+      "name": "makarworld",
+      "url": "https://github.com/makarworld"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="https://makarworld.github.io/SDA/" class="logo-group">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <span class="logo-title">SDA Codes</span>
+        <span class="logo-tag">Web</span>
+      </a>
+
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="lang-switch">
+          <button id="langRu" class="lang-btn active">RU</button>
+          <button id="langEn" class="lang-btn">EN</button>
+        </div>
+
+        <!-- GitHub Repo Link -->
+        <a href="https://github.com/makarworld/SDA" target="_blank" rel="noopener noreferrer" class="btn-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <h1 class="hero-title" data-i18n="hero_title">Steam Desktop Authenticator <span>Онлайн</span></h1>
+      <p class="hero-subtitle" data-i18n="hero_subtitle">
+        Безопасный генератор 2FA кодов Steam Guard из файлов .maFile прямо в вашем браузере. Данные хранятся только локально.
+      </p>
+
+      <div class="badges-row">
+        <span class="badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span data-i18n="badge_local">100% Локально в браузере</span>
+        </span>
+        <span class="badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+          <span data-i18n="badge_oss">Открытый исходный код</span>
+        </span>
+        <span class="badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span data-i18n="badge_safe">Ключи не передаются в сеть</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- SDA Authenticator Emulator Window -->
+    <section class="authenticator-container" aria-label="Steam Guard Authenticator Window">
+      <div class="sda-window">
+
+        <!-- Window TitleBar -->
+        <div class="sda-titlebar">
+          <div class="titlebar-left">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span class="titlebar-title" data-i18n="app_title">SDA Codes Web</span>
+          </div>
+          <div class="titlebar-controls">
+            <button class="win-btn" aria-label="Minimize">—</button>
+            <button class="win-btn" aria-label="Maximize">□</button>
+            <button class="win-btn close" aria-label="Close">✕</button>
+          </div>
+        </div>
+
+        <!-- Window NavBar -->
+        <div class="sda-navbar">
+          <div class="nav-actions">
+            <button id="btnAddMafile" class="nav-btn primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span data-i18n="add_mafile_btn">+ Добавить .maFile</span>
+            </button>
+          </div>
+          <div class="accounts-count">
+            <span data-i18n="accounts_label">Аккаунты:</span> <strong id="accountsCount">0</strong>
+          </div>
+        </div>
+
+        <!-- Window Body -->
+        <div class="sda-body">
+
+          <!-- Accounts Bar (shown when accounts exist) -->
+          <div id="accountsSection" class="account-bar" style="display: none;">
+            <select id="accountSelector" class="account-selector" aria-label="Select Steam Account">
+              <option value="" data-i18n="no_accounts">Нет добавленных аккаунтов</option>
+            </select>
+            <button id="btnDeleteAccount" class="account-btn-delete" title="Удалить аккаунт" aria-label="Delete Account">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Code Card -->
+          <div class="code-card">
+            <!-- Toast notification -->
+            <div id="copyToast" class="copy-toast" data-i18n="copied_toast">Скопировано в буфер!</div>
+
+            <!-- 5-character Code -->
+            <div id="codeDisplayWrap" class="code-display-wrap" title="Нажмите для копирования">
+              <div id="codeValue" class="code-value">-----</div>
+            </div>
+
+            <!-- Progress bar timer -->
+            <div class="timer-bar-wrap">
+              <div id="timerChunk" class="timer-bar-chunk"></div>
+            </div>
+
+            <!-- Bottom helper hints -->
+            <div class="code-hint">
+              <span data-i18n="copy_code_hint">Кликните по коду для копирования</span>
+              <span><span data-i18n="refresh_in">Обновление через</span> <span id="secondsLeft" class="seconds-left">30</span><span data-i18n="sec">с</span></span>
+            </div>
+          </div>
+
+          <!-- Drag & Drop Dropzone (shown when empty or for importing) -->
+          <div id="dropzone" class="dropzone">
+            <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div class="dropzone-text" data-i18n="dropzone_title">Перетащите сюда .maFile</div>
+            <div class="dropzone-subtext" data-i18n="dropzone_sub">или нажмите для выбора файлов на устройстве</div>
+          </div>
+
+          <!-- Hidden File Input for .maFile upload -->
+          <input type="file" id="fileInput" class="hidden-file-input" accept=".maFile,.json,text/plain" multiple>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CORS Notice & Desktop App Section -->
+    <section class="cors-notice-card">
+      <div class="cors-header">
+        <div class="cors-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="cors-title" data-i18n="cors_title">Подтверждения обменов и ограничение CORS</h2>
+          <p class="cors-desc" data-i18n="cors_desc">
+            Браузерная политика безопасности CORS блокирует прямые запросы к steamcommunity.com с клиентской стороны без стороннего прокси-сервера. Чтобы не ставить под угрозу безопасность ваших сессий, подтверждения обменов выполняются в нашем десктопном приложении.
+          </p>
+        </div>
+      </div>
+
+      <div class="cors-actions">
+        <a href="https://github.com/makarworld/SDA/releases" target="_blank" rel="noopener noreferrer" class="btn-primary-action">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span data-i18n="btn_download_desktop">Скачать SDA для Windows</span>
+        </a>
+
+        <a href="https://github.com/makarworld/SDA" target="_blank" rel="noopener noreferrer" class="btn-secondary-action">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span data-i18n="btn_github_repo">Репозиторий на GitHub</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section>
+      <h2 class="section-heading" data-i18n="features_heading">Преимущества веб-версии</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3 class="feature-title" data-i18n="feat1_title">Полная приватность</h3>
+          <p class="feature-text" data-i18n="feat1_text">
+            Все вычисления производятся через Web Crypto API на вашем устройстве. Никакие секретные ключи или файлы никогда не отправляются на сервер.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </div>
+          <h3 class="feature-title" data-i18n="feat2_title">Локальное хранилище</h3>
+          <p class="feature-text" data-i18n="feat2_text">
+            Загруженные аккаунты сохраняются в localStorage браузера. При следующем открытии страницы коды Guard будут сразу доступны.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <h3 class="feature-title" data-i18n="feat3_title">Мобильная адаптивность</h3>
+          <p class="feature-text" data-i18n="feat3_text">
+            Удобный интерфейс как на смартфонах (iOS / Android), так и на ПК. Быстро получайте Steam Guard коды в один клик.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Accordion Section -->
+    <section class="faq-section">
+      <h2 class="section-heading" data-i18n="faq_heading">Часто задаваемые вопросы (FAQ)</h2>
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q1">Безопасно ли загружать .maFile на сайт?</span>
+            <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq_a1">
+              Да, абсолютно. Веб-приложение работает статически через GitHub Pages. Код полностью открыт, генерация кодов происходит исключительно на стороне вашего браузера без каких-либо обращений к сторонним серверам.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q2">Что такое .maFile?</span>
+            <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq_a2">
+              maFile (Mobile Authenticator File) — это файл привязки мобильного аутентификатора Steam, содержащий shared_secret для вычисления одноразовых 2FA кодов Steam Guard.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q3">Почему нельзя подтверждать трейды с сайта?</span>
+            <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq_a3">
+              Из-за политики CORS (Cross-Origin Resource Sharing) современные браузеры запрещают веб-страницам отправлять авторизованные запросы к Steam. Для подтверждения трейдов и маркета используйте нашу десктопную версию SDA.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq_q4">Сохранятся ли аккаунты после закрытия браузера?</span>
+            <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq_a4">
+              Да. Аккаунты сохраняются в локальном хранилище браузера (localStorage). Вы можете в любой момент удалить их кнопкой с иконкой корзины.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="https://github.com/makarworld/SDA" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+        <span>·</span>
+        <a href="https://github.com/makarworld/SDA/releases" target="_blank" rel="noopener noreferrer">Releases & Download</a>
+        <span>·</span>
+        <a href="https://github.com/makarworld/SDA/issues" target="_blank" rel="noopener noreferrer">Issues & Feedback</a>
+      </div>
+      <p data-i18n="footer_copy">SDA Codes Web — Неофициальный веб-клиент Steam Desktop Authenticator.</p>
+      <p class="footer-disclaimer" data-i18n="footer_disclaimer">
+        Steam и логотип Steam являются товарными знаками Valve Corporation. Данный проект не связан с Valve Corporation.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="steam-totp.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

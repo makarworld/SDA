@@ -11,3 +11,4 @@ dist/
 *.spec
 gui.exe
 .vscode/
+.ua/
